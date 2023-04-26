@@ -17,15 +17,11 @@ runs:
   steps:
 
     #- uses: actions/checkout@v3
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        role-to-assume: ${{ inputs.aws-gh-action-role }}
-        aws-region: ap-northeast-2
-
     - name: Login to Amazon ECR Private
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
+      uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
+      with:
+        aws-gh-action-role: ${{ inputs.aws-gh-action-role }}
 
     - name: Build and Save Docker Image
       id: image-info
