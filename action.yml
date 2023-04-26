@@ -16,12 +16,6 @@ runs:
   using: 'composite'
   steps:
 
-    - name: Login to Amazon ECR Private
-      id: login-ecr
-      uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
-      with:
-        aws-gh-action-role: ${{ inputs.aws-gh-action-role }}
-
     - name: Build Docker Image
       id: image-info
       env:
