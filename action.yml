@@ -33,6 +33,6 @@ runs:
         ECR_REPOSITORY: ${{ inputs.service }}
         IMAGE_TAG: ${{ inputs.tag }}
       run: |
-        docker build -t $ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile }}
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile }}
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       shell: bash
