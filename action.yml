@@ -2,8 +2,11 @@ name: 'Build Docker Image'
 description: 'Build Docker Image'
 
 inputs:
+  ecr_root:
+    description: for ECR Repository Name (ecr_root/service)
+    required: true
   service:
-    description: for ECR Repository Name
+    description: for ECR Repository Name (ecr_root/service)
     required: true
   tag:
     description: The tag name
@@ -16,29 +19,30 @@ runs:
   using: 'composite'
   steps:
 
+    #- uses: actions/checkout@v3
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: ${{ inputs.aws-gh-action-role }}
+        aws-region: ap-northeast-2
+
     - name: Login to Amazon ECR Private
       id: login-ecr
-      uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
-      with:
-        aws-gh-action-role: ${{ inputs.aws-gh-action-role }}
+      uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build Docker Image
+    - name: Build and Save Docker Image
       id: image-info
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ inputs.service }}
+        ECR_REPOSITORY: ${{ inputs.ecr_root }}/${{ inputs.service }}
         IMAGE_TAG: ${{ inputs.tag }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file docker/Dockerfile
+        docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -o image.tar
       shell: bash
 
-    - name: Push Docker image to ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: ${{ inputs.service }}
-        #IMAGE_NAME=your-image-name
-        TEMP_TAG: ${{ inputs.temp_tag }}
-        IMAGE_TAG: ${{ inputs.tag }}
-      run: |
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-      shell: bash
+    - name: Upload Docker image artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: docker-image
+        path: image.tar
