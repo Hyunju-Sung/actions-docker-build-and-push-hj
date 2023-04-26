@@ -26,16 +26,8 @@ runs:
     - name: Build and Save Docker Image
       id: image-info
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: ${{ inputs.service }}
         IMAGE_TAG: ${{ inputs.tag }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file docker/Dockerfile
-        docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -o image.tar
+        docker build -t $ECR_REPOSITORY:$IMAGE_TAG . --file docker/Dockerfile
       shell: bash
-
-    - name: Upload Docker image artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: docker-image
-        path: image.tar
