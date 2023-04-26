@@ -19,6 +19,8 @@ runs:
     - name: Login to Amazon ECR Private
       id: login-ecr
       uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
+      with:
+        role-to-assume: ${{ inputs.aws-gh-action-role }}
 
     - name: Build Docker Image
       id: image-info
