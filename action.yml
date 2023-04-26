@@ -5,6 +5,9 @@ inputs:
   service:
     description: for ECR Repository Name
     required: true
+  dockerfile:
+    description: dockerfile-absolute-path
+    required: true
   tag:
     description: The tag name
     required: true
@@ -29,5 +32,6 @@ runs:
         ECR_REPOSITORY: ${{ inputs.service }}
         IMAGE_TAG: ${{ inputs.tag }}
       run: |
-        docker build -t $ECR_REPOSITORY:$IMAGE_TAG . --file docker/Dockerfile
+        docker build -t $ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile }}
+        docker push $ECR_REPOSITORY:$IMAGE_TAG
       shell: bash
