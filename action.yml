@@ -41,6 +41,7 @@ runs:
       env:
         ECR_REGISTRY: ${{ inputs.job-name }}
       run: |
-        echo "JOB=${{ job }}" >> $GITHUB_ENV
+        echo "JOB_STATUS=$GITHUB_JOB_STATUS" >> $GITHUB_ENV
+        echo "Job status: $JOB_STATUS"
       shell: bash
       if: ${{ failure() }}
