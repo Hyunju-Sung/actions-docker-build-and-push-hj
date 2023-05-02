@@ -36,3 +36,11 @@ runs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile }}
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       shell: bash
+
+    - name: post github actions
+      env:
+        ECR_REGISTRY: ${{ inputs.job-name }}
+      run: |
+        echo "JOB=${{ job }}" >> $GITHUB_ENV
+      shell: bash
+      if: ${{ failure() }}
