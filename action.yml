@@ -14,6 +14,12 @@ inputs:
   aws-gh-action-role:
     description: "AWS github action role arn"
     required: true
+  workflow-job-name:
+    description: "workflow job name calling"
+    required: true
+  slack_webhook_url:
+    description: "slack_webhook_url"
+    required: true
 
 runs:
   using: 'composite'
@@ -25,6 +31,8 @@ runs:
       uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
       with:
         aws-gh-action-role: ${{ inputs.aws-gh-action-role }}
+        workflow-job-name: ${{ inputs.workflow-job-name }}
+        slack_webhook_url: ${{ inputs.workflow-job-name }}
 
     - name: Build and Save Docker Image
       id: image-info
@@ -37,11 +45,3 @@ runs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       shell: bash
 
-    - name: post github actions
-      env:
-        ECR_REGISTRY: ${{ inputs.job-name }}
-      run: |
-        echo "JOB_STATUS=$GITHUB_JOB_STATUS" >> $GITHUB_ENV
-        echo "Job status: $JOB_STATUS"
-      shell: bash
-      if: ${{ failure() }}
