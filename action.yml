@@ -11,12 +11,6 @@ inputs:
   tag:
     description: The tag name
     required: true
-  aws-gh-action-role:
-    description: "AWS github action role arn"
-    required: true
-  workflow-job-name:
-    description: "workflow job name calling"
-    required: true
 
 runs:
   using: 'composite'
@@ -26,8 +20,6 @@ runs:
     - name: Login to Amazon ECR Private
       id: login-ecr
       uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
-      with:
-        aws-gh-action-role: ${{ inputs.aws-gh-action-role }}
         #workflow-job-name: ${{ inputs.workflow-job-name }}
 
     - name: Build and Save Docker Image
