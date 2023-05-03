@@ -32,7 +32,7 @@ runs:
       with:
         aws-gh-action-role: ${{ inputs.aws-gh-action-role }}
         workflow-job-name: ${{ inputs.workflow-job-name }}
-        slack_webhook_url: ${{ inputs.workflow-job-name }}
+        slack_webhook_url: ${{ inputs.slack_webhook_url }}
 
     - name: Build and Save Docker Image
       id: image-info
