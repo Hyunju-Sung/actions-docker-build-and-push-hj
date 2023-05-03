@@ -17,12 +17,6 @@ inputs:
   workflow-job-name:
     description: "workflow job name calling"
     required: true
-  slack_webhook_url:
-    description: "slack_webhook_url"
-    required: true
-  github-token:
-    description: "slack_webhook_url"
-    required: true
 
 runs:
   using: 'composite'
@@ -34,7 +28,7 @@ runs:
       uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
       with:
         aws-gh-action-role: ${{ inputs.aws-gh-action-role }}
-        workflow-job-name: ${{ inputs.workflow-job-name }}
+        #workflow-job-name: ${{ inputs.workflow-job-name }}
 
     - name: Build and Save Docker Image
       id: image-info
