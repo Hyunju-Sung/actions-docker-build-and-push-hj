@@ -46,7 +46,7 @@ runs:
         
         echo "Local image digest: $IMAGE_DIGEST"
         
-        ECR_IMAGE_DIGESTS=$(aws ecr list-images --repository-name $ECR_REPOSITORY --region <your-region> --output text --query 'imageIds[*].imageDigest')
+        ECR_IMAGE_DIGESTS=$(aws ecr list-images --repository-name $ECR_REPOSITORY --region ap-northeast-2 --output text --query 'imageIds[*].imageDigest')
 
         DIGEST_EXISTS=false
         for ecr_digest in $ECR_IMAGE_DIGESTS; do
