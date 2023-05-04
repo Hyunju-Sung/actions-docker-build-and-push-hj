@@ -43,17 +43,25 @@ runs:
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile-path }}
         IMAGE_ID=$(docker images -q $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG)
         IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE_ID)
-  
-        echo "$IMAGE_DIGEST"
-        # Check if there is a matching image digest in the ECR repository
-        MATCHING_IMAGE=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query "imageDetails[?imageDigest=='$IMAGE_DIGEST']" --output text || true)
+        
+        echo "Local image digest: $IMAGE_DIGEST"
+        
+        ECR_IMAGE_DIGESTS=$(aws ecr list-images --repository-name $ECR_REPOSITORY --region <your-region> --output text --query 'imageIds[*].imageDigest')
 
-        if [ -z "$MATCHING_IMAGE" ]; then
-          echo "The image with digest $IMAGE_DIGEST does not exist in the ECR repository."
+        DIGEST_EXISTS=false
+        for ecr_digest in $ECR_IMAGE_DIGESTS; do
+          if [ "$IMAGE_DIGEST" == "$ecr_digest" ]; then
+            DIGEST_EXISTS=true
+            break
+          fi
+        done
+        
+        if $DIGEST_EXISTS; then
+          echo "Matching image digest found in the ECR repository"
+        else
+          echo "No matching image digest found in the ECR repository"
           docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG | gzip > $CACHE_FILE
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        else
-          echo "The image with digest $IMAGE_DIGEST already exists in the ECR repository."
         fi
 
       shell: bash
