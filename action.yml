@@ -42,7 +42,7 @@ runs:
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile-path }}
         IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG)
-
+        echo "$IMAGE_DIGEST"
         # Check if there is a matching image digest in the ECR repository
         MATCHING_IMAGE=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query "imageDetails[?imageDigest=='$IMAGE_DIGEST']")
 
