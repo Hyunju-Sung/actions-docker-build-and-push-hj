@@ -83,13 +83,12 @@ runs:
       env:
         ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ env.ecr-root }}/${{ inputs.env }}/${{ inputs.service }}
-        IMAGE_TAG: ${{ inputs.tag }}
         CACHE_FILE: /tmp/docker-image-cache.tar.gz
         NEW_IMAGE_TAG: 1.2.3
       run: |
         if [ -f "$CACHE_FILE" ]; then
-          gunzip -c $CACHE_FILE | docker load
-          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:${{ inputs.tag }} $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
+          IMAGE_ID=$(gunzip -c $CACHE_FILE | docker load | awk -F ':' '{print $3}' | awk -F ' ' '{print $1}')
+          docker tag $IMAGE_ID $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
         fi
       shell: bash
