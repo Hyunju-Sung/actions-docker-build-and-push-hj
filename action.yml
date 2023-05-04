@@ -90,14 +90,14 @@ runs:
           echo "Loading image from cache..."
           LOADING_RESULT=$(gunzip -c $CACHE_FILE | docker load)
           echo "$LOADING_RESULT"
-          IMAGE_ID=$(echo "$LOADING_RESULT" | awk -F ':' '{print $3}' | awk -F ' ' '{print $1}')
-          echo "Image ID: $IMAGE_ID"
-        if [ -n "$IMAGE_ID" ]; then
-          docker tag $IMAGE_ID $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
-        else
-          echo "Failed to retrieve image ID."
-        fi
+          LOADED_IMAGE=$(echo "$LOADING_RESULT" | grep -oP '(?<=Loaded image: ).*')
+          echo "Loaded Image: $LOADED_IMAGE"
+          if [ -n "$LOADED_IMAGE" ]; then
+            docker tag $LOADED_IMAGE $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
+            docker push $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
+          else
+            echo "Failed to retrieve loaded image."
+          fi
         else
           echo "Cache file not found."
         fi
