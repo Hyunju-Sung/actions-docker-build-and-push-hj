@@ -32,12 +32,6 @@ runs:
       id: login-ecr
       uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
 
-    - name: Install jq
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y jq
-      shell: bash
-
     - name: Build Docker Image with dockerfile
       if: ${{ inputs.custom-docker-build-command == '' && inputs.custom-docker-image-name == '' && inputs.env == 'stg' && env.TAG_ALREADY_EXIST != 'true' }}
       env:
