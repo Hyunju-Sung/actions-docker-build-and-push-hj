@@ -5,31 +5,58 @@ inputs:
   service:
     description: for ECR Repository Name
     required: true
-  dockerfile:
+  dockerfile-path:
     description: dockerfile-absolute-path
     required: true
   tag:
     description: The tag name
     required: true
+  custom-docker-build-command:
+    description: docker-build-command
+    default: ''
+  custom-docker-image-name:
+    description: docker-image-name
+    default: ''
+  custom-docker-tag:
+    description: custom-docker-tag
+    default: latest
 
 runs:
   using: 'composite'
   steps:
 
-    #- uses: actions/checkout@v3
     - name: Login to Amazon ECR Private
       id: login-ecr
       uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
-        #workflow-job-name: ${{ inputs.workflow-job-name }}
 
-    - name: Build and Save Docker Image
-      id: image-info
+    - name: Build Docker Image with dockerfile
+      if: ${{ inputs.custom-docker-build-command == '' && inputs.custom-docker-image-name == '' }}
       env:
         ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ inputs.service }}
         IMAGE_TAG: ${{ inputs.tag }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile }}
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile-path }}
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       shell: bash
+
+    - name: Build Docker Image with command
+      if: ${{ inputs.custom-docker-build-command != '' && inputs.custom-docker-image-name != '' }}
+      env:
+        ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
+        ECR_REPOSITORY: ${{ inputs.service }}
+        IMAGE_TAG: ${{ inputs.tag }}
+      run: |
+        ${{ inputs.custom-docker-build-command }}
+        docker tag ${{ inputs.custom-docker-image-name }}:${{ inputs.custom-docker-tag }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG 
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+      shell: bash
+
+    #1. command 로 docker build 하기
+    #2. cicd-tutorial / stg||prd / cicd-python-tutorial -- 그러면.. stg 랑 prd push 하는 디렉토리가 다름
+    #3. cicd-tutorial/ prd / cicd-python-tutorial:0.0.0-:
+    #(stg)
+    #SHA 를 보고// 이미 ECR 에 태그가 찍혀있으면 >> 뒷 단에서 new_stg_tag 를 그 태그로 덮어쓴다.  (docker-build-and-push ,그리고 ECR 에는 푸쉬를 안 한다 (태그 안 한다) )
+    #job pass *
+    #ECR Repository 수정
 
