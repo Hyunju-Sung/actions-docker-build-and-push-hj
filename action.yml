@@ -32,6 +32,41 @@ runs:
       id: login-ecr
       uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
 
+    - name: Install jq
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y jq
+      shell: bash
+
+    - name: Image Tag Valid Check for STG
+      id: check_tag
+      env:
+        ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
+        ECR_REPOSITORY: ${{ env.ecr-root }}/${{ inputs.env }}/${{ inputs.service }}
+      run: |
+        IMAGE_DIGEST=${{ github.sha }}
+        echo "Searching for image with digest: $IMAGE_DIGEST in ECR"
+
+        IMAGE_TAGS=$(aws ecr list-images --repository-name $ECR_REPOSITORY | jq -r '.imageIds[].imageTag')
+        TAG_ALREADY_EXIST="false"
+
+        for tag in $IMAGE_TAGS; do
+          IMAGE_DETAILS=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --image-ids imageTag=$tag)
+          if echo "$IMAGE_DETAILS" | jq -e --arg digest "$IMAGE_DIGEST" '.images[] | select(.imageDigest == $digest)' > /dev/null; then
+            TAG_ALREADY_EXIST="true"
+            break
+          fi
+        done
+
+        echo "::set-output name=tag_already_exist::$TAG_ALREADY_EXIST"
+
+        if [ "$TAG_ALREADY_EXIST" == "true" ]; then
+          echo "Image found with the specified digest."
+        else
+          echo "No image found with the specified digest."
+        fi
+      shell: bash
+
     - name: Build Docker Image with dockerfile
       if: ${{ inputs.custom-docker-build-command == '' && inputs.custom-docker-image-name == '' && inputs.env == 'stg' }}
       env:
@@ -58,7 +93,6 @@ runs:
         docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG | gzip > $CACHE_FILE
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
       shell: bash
-
 
     - name: Cache Docker layers
       if: ${{ inputs.env == 'stg' }}
@@ -105,7 +139,7 @@ runs:
 
 
 
-      #1. command 로 docker build 하기
+    #1. command 로 docker build 하기
     #2. cicd-tutorial / stg||prd / cicd-python-tutorial -- 그러면.. stg 랑 prd push 하는 디렉토리가 다름
     #3. cicd-tutorial/ prd / cicd-python-tutorial:0.0.0-:
     #(stg)
