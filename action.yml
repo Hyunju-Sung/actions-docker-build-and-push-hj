@@ -11,6 +11,9 @@ inputs:
   tag:
     description: The tag name
     required: true
+  env:
+    description: environment (stg, prd)
+    required: true
   custom-docker-build-command:
     description: docker-build-command
     default: ''
@@ -33,7 +36,7 @@ runs:
       if: ${{ inputs.custom-docker-build-command == '' && inputs.custom-docker-image-name == '' }}
       env:
         ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
-        ECR_REPOSITORY: ${{ inputs.service }}
+        ECR_REPOSITORY: ${{ env.ecr-root }}/${{ inputs.env }}/${{ inputs.service }}
         IMAGE_TAG: ${{ inputs.tag }}
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile-path }}
@@ -44,7 +47,7 @@ runs:
       if: ${{ inputs.custom-docker-build-command != '' && inputs.custom-docker-image-name != '' }}
       env:
         ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
-        ECR_REPOSITORY: ${{ inputs.service }}
+        ECR_REPOSITORY: ${{ env.ecr-root }}/${{ inputs.env }}/${{ inputs.service }}
         IMAGE_TAG: ${{ inputs.tag }}
       run: |
         ${{ inputs.custom-docker-build-command }}
