@@ -41,9 +41,11 @@ runs:
         CACHE_FILE: /tmp/docker-image-cache.tar.gz
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile-path }}
-        docker inspect --format='{{index .RepoDigests 0}}' $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG)
+
+        # Check if there is a matching image digest in the ECR repository
         MATCHING_IMAGE=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query "imageDetails[?imageDigest=='$IMAGE_DIGEST']")
-  
+
         if [ -z "$MATCHING_IMAGE" ]; then
           echo "The image with digest $IMAGE_DIGEST does not exist in the ECR repository."
           docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG | gzip > $CACHE_FILE
