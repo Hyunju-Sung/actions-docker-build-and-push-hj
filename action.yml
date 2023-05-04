@@ -84,7 +84,7 @@ runs:
         ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ env.ecr-root }}/${{ inputs.env }}/${{ inputs.service }}
         CACHE_FILE: /tmp/docker-image-cache.tar.gz
-        NEW_IMAGE_TAG: 1.2.3
+        NEW_IMAGE_TAG: ${{ inputs.tag }}
       run: |
         if [ -f "$CACHE_FILE" ]; then
           echo "Loading image from cache..."
