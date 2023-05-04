@@ -47,7 +47,7 @@ runs:
         CACHE_FILE: /tmp/docker-image-cache.tar.gz
       run: |
         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile-path }}
-        docker inspect --format='{{index .RepoDigests 0}}' my-ecr-registry/my-ecr-repository:my-image-tag
+        docker inspect --format='{{index .RepoDigests 0}}' $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         MATCHING_IMAGE=$(aws ecr describe-images --repository-name $ECR_REPOSITORY --query "imageDetails[?imageDigest=='$IMAGE_DIGEST']")
   
         if [ -z "$MATCHING_IMAGE" ]; then
