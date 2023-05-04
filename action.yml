@@ -87,9 +87,19 @@ runs:
         NEW_IMAGE_TAG: 1.2.3
       run: |
         if [ -f "$CACHE_FILE" ]; then
-          IMAGE_ID=$(gunzip -c $CACHE_FILE | docker load | awk -F ':' '{print $3}' | awk -F ' ' '{print $1}')
+          echo "Loading image from cache..."
+          LOADING_RESULT=$(gunzip -c $CACHE_FILE | docker load)
+          echo "$LOADING_RESULT"
+          IMAGE_ID=$(echo "$LOADING_RESULT" | awk -F ':' '{print $3}' | awk -F ' ' '{print $1}')
+          echo "Image ID: $IMAGE_ID"
+        if [ -n "$IMAGE_ID" ]; then
           docker tag $IMAGE_ID $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_IMAGE_TAG
+        else
+          echo "Failed to retrieve image ID."
+        fi
+        else
+          echo "Cache file not found."
         fi
       shell: bash
 
