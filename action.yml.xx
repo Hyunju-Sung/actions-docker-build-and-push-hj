@@ -41,19 +41,25 @@ runs:
         IMAGE_TAG: ${{ inputs.tag }}
         CACHE_FILE: /tmp/docker-image-cache.tar.gz
       run: |
-        IMAGE_EXISTS=$(aws ecr list-images --repository-name $ECR_REPOSITORY --filter tagStatus=TAGGED --query 'imageIds[?imageTag==`'"$GITHUB_SHA"'`]' --output text)
-        if [ -z "$IMAGE_EXISTS" ]; then
-          echo "No image found with tag: $GITHUB_SHA"
-          echo "::set-output name=github-sha-image-exists::false"
-          docker build -q -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA . --file ${{ inputs.dockerfile-path }}
+        docker build -q -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile-path }}
+        NEW_DIGEST=$(docker inspect --format='{{.Id}}' $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG)
+        echo "New image digest: $NEW_DIGEST"
+        
+        # List all the images in the ECR repository
+        IMAGES=$(aws ecr list-images --repository-name $ECR_REPOSITORY --output json)
+        
+        # Check if there is an image with the same digest as NEW_DIGEST
+        IMAGE_FOUND=$(echo $IMAGES | jq -r --arg NEW_DIGEST "$NEW_DIGEST" '.imageIds[] | select(.imageDigest == $NEW_DIGEST) | .imageDigest' || true)
+    
+        if [ -n "$IMAGE_FOUND" ]; then
+          echo "An image with the digest $NEW_DIGEST already exists in ECR."
+          echo "::set-output name=image-digest-exists::true"
+        else
+          echo "No image with the digest $NEW_DIGEST found in ECR."
+          echo "::set-output name=image-digest-exists::false"
           docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG | gzip > $CACHE_FILE
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA
-        else
-          echo "Image found with tag: $GITHUB_SHA"
-          echo "::set-output name=github-sha-image-exists::true"
         fi
-
       shell: bash
 
     - name: Build Docker Image with command and Push to ECR with dockerfile
