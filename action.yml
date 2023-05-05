@@ -8,9 +8,10 @@ inputs:
   dockerfile-path:
     description: dockerfile-absolute-path
     required: true
-  tag:
+  new-stg-tag:
     description: The tag name
-    required: true
+  latest-stg-tag:
+    description: The tag name
   env:
     description: environment (stg, prd)
     required: true
@@ -23,6 +24,9 @@ inputs:
   custom-docker-tag:
     description: custom-docker-tag
     default: latest
+
+outputs:
+  valid-new-stg-tag: ${{ outputs.generate-valid-tag.valid-new-stg-tag}}
 
 runs:
   using: 'composite'
@@ -53,39 +57,14 @@ runs:
           echo "Image found with tag: $GITHUB_SHA"
           echo "::set-output name=github-sha-image-exists::true"
         fi
-
       shell: bash
 
-    - name: Build Docker Image with command and Push to ECR with dockerfile
-      id: dockerizing-with-command
-      if: ${{ inputs.custom-docker-build-command != '' && inputs.custom-docker-image-name != '' && inputs.env == 'stg' }}
-      env:
-        ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
-        ECR_REPOSITORY: ${{ env.ecr-root }}/${{ inputs.env }}/${{ inputs.service }}
-        IMAGE_TAG: ${{ inputs.tag }}
-        CACHE_FILE: /tmp/docker-image-cache.tar.gz
+    - name: swap new stg tag to existed tag
+      id: generate-valid-tag
+      if: steps.dockerizing-with-dockerfile.github-sha-image-exists == true
       run: |
-        ${{ inputs.custom-docker-build-command }}
-        docker tag ${{ inputs.custom-docker-image-name }}:${{ inputs.custom-docker-tag }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        NEW_DIGEST=$(docker inspect --format='{{.Id}}' $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG)
-        echo "New image digest: $NEW_DIGEST"
-
-        # List all the images in the ECR repository
-        IMAGES=$(aws ecr list-images --repository-name $ECR_REPOSITORY --output json)
-
-        # Check if there is an image with the same digest as NEW_DIGEST
-        IMAGE_FOUND=$(echo $IMAGES | jq -r --arg NEW_DIGEST "$NEW_DIGEST" '.imageIds[] | select(.imageDigest == $NEW_DIGEST) | .imageDigest' || true)
-
-        if [ -n "$IMAGE_FOUND" ]; then
-          echo "An image with the digest $NEW_DIGEST already exists in ECR."
-          echo "::set-output name=image-digest-exists::true"
-        else
-          echo "No image with the digest $NEW_DIGEST found in ECR."
-          echo "::set-output name=image-digest-exists::false"
-          docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG | gzip > $CACHE_FILE
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        fi
-      shell: bash
+        echo "valid-new-stg-tag: ${{ inputs.latest-tag }}"
+        echo "::set-output name=valid-new-stg-tag::${{ inputs.latest-tag }}"
 
     - name: Cache Docker layers
       if: ${{ inputs.env == 'stg' }}
