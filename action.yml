@@ -28,7 +28,8 @@ inputs:
 outputs:
   github-sha-image-exists:
     description: 'Indicates if an image with the same GitHub SHA exists in ECR'
-  valid-new-stg-tag: ${{ steps.generate-valid-tag.outputs.valid-new-stg-tag }}
+  valid-new-stg-tag:
+    description: 'valid new stg tag'
 
 runs:
   using: 'composite'
