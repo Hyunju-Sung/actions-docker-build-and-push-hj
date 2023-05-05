@@ -32,7 +32,8 @@ runs:
       id: login-ecr
       uses: Hyunju-Sung/actions-ecr-login-hj@0.0.4
 
-    - name: Check Image Already Exists
+    - name: Build Docker Image with dockerfile
+      id: check-image-digest
       if: ${{ inputs.custom-docker-build-command == '' && inputs.custom-docker-image-name == '' && inputs.env == 'stg' && env.TAG_ALREADY_EXIST != 'true' }}
       env:
         ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
@@ -52,9 +53,13 @@ runs:
     
         if [ -n "$IMAGE_FOUND" ]; then
           echo "An image with the digest $NEW_DIGEST already exists in ECR."
+          echo "::set-output name=image-digest-exists::true"
         else
           echo "No image with the digest $NEW_DIGEST found in ECR."
-        # Perform additional actions if the image doesn't exist, like pushing the image to ECR
+          echo "::set-output name=image-digest-exists::false"
+          docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG | gzip > $CACHE_FILE
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         fi
-
       shell: bash
+
+        
