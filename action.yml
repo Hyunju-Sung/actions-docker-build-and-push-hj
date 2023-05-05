@@ -26,7 +26,9 @@ inputs:
     default: latest
 
 outputs:
-  valid-new-stg-tag: ${{ outputs.generate-valid-tag.valid-new-stg-tag}}
+  github-sha-image-exists:
+    description: 'Indicates if an image with the same GitHub SHA exists in ECR'
+  valid-new-stg-tag: ${{ steps.generate-valid-tag.outputs.valid-new-stg-tag }}
 
 runs:
   using: 'composite'
@@ -61,10 +63,11 @@ runs:
 
     - name: swap new stg tag to existed tag
       id: generate-valid-tag
-      if: steps.dockerizing-with-dockerfile.github-sha-image-exists == true
+      if: ${{ steps.dockerizing-with-dockerfile.outputs.github-sha-image-exists == 'true' }}
       run: |
-        echo "valid-new-stg-tag: ${{ inputs.latest-tag }}"
-        echo "::set-output name=valid-new-stg-tag::${{ inputs.latest-tag }}"
+        echo "valid-new-stg-tag: ${{ inputs.latest-stg-tag }}"
+        echo "::set-output name=valid-new-stg-tag::${{ inputs.latest-stg-tag }}"
+      shell: bash
 
     - name: Cache Docker layers
       if: ${{ inputs.env == 'stg' }}
