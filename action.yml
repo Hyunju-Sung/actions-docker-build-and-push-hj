@@ -44,7 +44,4 @@ runs:
         NEW_DIGEST=$(docker inspect --format='{{.Id}}' $ECR_REGISTRY/$ECR_REPOSITORY:$NEW_TAG)
         echo "New image digest: $NEW_DIGEST"
         
-        # List all the images in the ECR repository
-        IMAGES=$(aws ecr list-images --repository-name cicd-tutorial/stg/cicd-python-tutorial --output json)
-
       shell: bash
