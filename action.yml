@@ -45,6 +45,6 @@ runs:
         echo "New image digest: $NEW_DIGEST"
         
         # List all the images in the ECR repository
-        IMAGES=$(aws ecr list-images --repository-name $ECR_REPOSITORY --output json)
+        IMAGES=$(aws ecr list-images --repository-name cicd-tutorial/stg/cicd-python-tutorial --output json)
 
       shell: bash
