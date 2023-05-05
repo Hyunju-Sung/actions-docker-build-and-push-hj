@@ -47,14 +47,4 @@ runs:
         # List all the images in the ECR repository
         IMAGES=$(aws ecr list-images --repository-name $ECR_REPOSITORY --output json)
 
-        # Check if there is an image with the same digest as NEW_DIGEST
-        IMAGE_FOUND=$(echo $IMAGES | jq -r --arg NEW_DIGEST "$NEW_DIGEST" '.imageIds[] | select(.imageDigest == $NEW_DIGEST) | .imageDigest')
-
-        if [ -n "$IMAGE_FOUND" ]; then
-          echo "An image with the digest $NEW_DIGEST already exists in ECR."
-        else
-          echo "No image with the digest $NEW_DIGEST found in ECR."
-          # Perform additional actions if the image doesn't exist, like pushing the image to ECR
-        fi
-
       shell: bash
