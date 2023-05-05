@@ -45,7 +45,7 @@ runs:
       env:
         ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ env.ecr-root }}/${{ inputs.env }}/${{ inputs.service }}
-        IMAGE_TAG: ${{ inputs.tag }}
+        IMAGE_TAG: ${{ inputs.new-stg-tag }}
         CACHE_FILE: /tmp/docker-image-cache.tar.gz
       run: |
         IMAGE_EXISTS=$(aws ecr list-images --repository-name $ECR_REPOSITORY --filter tagStatus=TAGGED --query 'imageIds[?imageTag==`'"$GITHUB_SHA"'`]' --output text)
