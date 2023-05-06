@@ -12,9 +12,6 @@ inputs:
     description: The tag name
   latest-stg-tag:
     description: The tag name
-  env:
-    description: environment (stg, prd)
-    required: true
   custom-docker-build-command:
     description: docker-build-command
     default: ''
@@ -24,10 +21,11 @@ inputs:
   custom-docker-tag:
     description: custom-docker-tag
     default: latest
+  env:
+    description: environment (stg, prd)
+    required: true
 
 outputs:
-  github-sha-image-exists:
-    description: 'Indicates if an image with the same GitHub SHA exists in ECR'
   valid-new-stg-tag:
     description: 'valid new stg tag'
 
