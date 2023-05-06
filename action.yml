@@ -83,7 +83,8 @@ runs:
         docker save $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG | gzip > $CACHE_FILE
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA
-
+      shell: bash
+      
     - name: Cache Docker layers
       if: ${{ steps.valid-image-check.outputs.github-sha-image-exists == 'false' }}
       uses: actions/cache@v2
