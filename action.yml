@@ -71,7 +71,7 @@ runs:
       shell: bash
 
     - name: Push to ECR
-      if: steps.valid-image-check.outputs.github-sha-image-exists == false
+      if: ${{ steps.valid-image-check.outputs.github-sha-image-exists == 'false' }}
       env:
         ECR_REGISTRY: ${{ env.ECR_REGISTRY }}
         ECR_REPOSITORY: ${{ env.ecr-root }}/${{ inputs.env }}/${{ inputs.service }}
@@ -84,7 +84,7 @@ runs:
       shell: bash
 
     - name: Cache Docker layers
-      if: steps.valid-image-check.outputs.github-sha-image-exists == false
+      if: ${{ steps.valid-image-check.outputs.github-sha-image-exists == 'false' }}
       uses: actions/cache@v2
       with:
         path: /tmp/docker-image-cache.tar.gz
