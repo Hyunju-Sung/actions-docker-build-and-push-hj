@@ -63,7 +63,7 @@ runs:
         CACHE_FILE: /tmp/docker-image-cache.tar.gz
       run: |
         if [[ -z "${{ inputs.custom-docker-build-command }}" && -z "${{ inputs.custom-docker-image-name }}" ]]; then
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA . --file ${{ inputs.dockerfile-path }}
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG . --file ${{ inputs.dockerfile-path }}
         else
           ${{ inputs.custom-docker-build-command }}
           docker tag ${{ inputs.custom-docker-image-name }}:${{ inputs.custom-docker-tag }} $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
